@@ -50,8 +50,7 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 # =========================
 # PERMISSIONS (RENDER FIX)
 # =========================
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 777 storage bootstrap/cache /var/www/html/storage/logs
+RUN mkdir -p storage/logs && chown -R www-data:www-data storage bootstrap/cache /var/www/html && chmod -R 777 storage bootstrap/cache
 
 # =========================
 # LARAVEL SAFE CACHE (NO BOOT CRASH)
