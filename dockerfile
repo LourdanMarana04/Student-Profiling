@@ -47,5 +47,5 @@ RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-avail
 
 EXPOSE 80
 
-CMD sh -c "php artisan config:clear && php artisan cache:clear && apache2-foreground"
+CMD sh -c "php artisan config:clear && php artisan view:clear && php artisan cache:clear && apache2-foreground"
 
