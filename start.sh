@@ -1,16 +1,22 @@
 #!/bin/bash
 
-echo "Starting Laravel..."
-
-if [ ! -f .env ]; then
-  echo "Generating APP_KEY..."
-  php artisan key:generate --no-interaction --force
-fi
 echo "=== Laravel Startup ==="
-php artisan key:generate --force --no-interaction || true
-php artisan config:cache || echo "Config cache failed"
-php artisan route:cache || echo "Route cache failed"
-php artisan view:cache || echo "View cache failed"
-php artisan migrate --force || echo "Migration failed - manual run needed"
+
+# Clear old cache
+php artisan config:clear
+php artisan cache:clear
+rm -f .env
+
+# Generate proper APP_KEY
+php artisan key:generate --no-interaction --force
+
+# Cache AFTER env vars
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Migrate
+php artisan migrate --force || echo "Migration failed"
+
 echo "=== Startup complete ==="
 exec apache2-foreground
