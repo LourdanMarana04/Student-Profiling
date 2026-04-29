@@ -43,7 +43,13 @@ COPY . .
 # =========================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Clear and rebuild Laravel cache (IMPORTANT for Render env vars)
+RUN php artisan config:clear \
+    && php artisan cache:clear \
+    && php artisan config:cache
 
 # =========================
 # PERMISSIONS (RENDER FIX)
