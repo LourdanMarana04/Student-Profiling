@@ -5,7 +5,7 @@ echo "=== Laravel Startup ==="
 # Clear old cache
 php artisan config:clear || true
 php artisan cache:clear || true
-rm -f .env bootstrap/cache/config.php bootstrap/cache/services.php
+rm -f .env bootstrap/cache/*.php storage/logs/laravel*.log
 
 # Generate proper APP_KEY
 php artisan key:generate --no-interaction --force
