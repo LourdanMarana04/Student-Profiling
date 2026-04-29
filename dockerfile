@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install system dependencies FIRST (IMPORTANT)
+# System dependencies
 RUN apt-get update && apt-get install -y \
     git curl zip unzip \
     libzip-dev \
@@ -8,13 +8,16 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libonig-dev \
-    libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip mbstring xml
+    libxml2-dev
 
-# Enable Apache rewrite (Laravel requirement)
+# GD FIX (more stable configuration)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql zip mbstring xml
+
+# Enable Apache rewrite
 RUN a2enmod rewrite
-# 🔥 CRITICAL FIX: set Apache document root to /public
+
+# Set correct Laravel public folder
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
@@ -24,16 +27,21 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
 
 WORKDIR /var/www/html
 
-
+# Copy project
 COPY . .
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install dependencies
+# Install dependencies (IMPORTANT FIX HERE)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Permissions fix
+# Laravel permissions
 RUN chmod -R 775 storage bootstrap/cache
 
+# 🔥 CRITICAL: ensure artisan exists
+RUN ls -la
+
 EXPOSE 80
+
+CMD ["apache2-foreground"]
