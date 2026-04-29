@@ -51,7 +51,7 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 # PERMISSIONS (RENDER FIX)
 # =========================
 RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 777 storage bootstrap/cache
+    && chmod -R 777 storage bootstrap/cache /var/www/html/storage/logs
 
 # =========================
 # LARAVEL SAFE CACHE (NO BOOT CRASH)
@@ -72,6 +72,6 @@ EXPOSE 80
 # =========================
 # START APACHE
 # =========================
-RUN chmod +x start.sh
-
+RUN chmod +x start.sh \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 CMD ["bash", "start.sh"]
