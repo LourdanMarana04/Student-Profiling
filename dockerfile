@@ -1,13 +1,16 @@
 FROM php:8.2-apache
 
-# Install required system dependencies (FIX for libzip error)
+# Install system dependencies FIRST (IMPORTANT)
 RUN apt-get update && apt-get install -y \
     git curl zip unzip \
     libzip-dev \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    && docker-php-ext-configure zip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip
+    && docker-php-ext-install gd pdo pdo_mysql zip mbstring xml
 
 # Enable Apache rewrite (Laravel requirement)
 RUN a2enmod rewrite
@@ -19,10 +22,10 @@ COPY . .
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install Laravel dependencies
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Fix permissions
+# Permissions fix
 RUN chmod -R 775 storage bootstrap/cache
 
 EXPOSE 80
