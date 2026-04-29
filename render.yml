@@ -6,6 +6,6 @@ services:
     branch: main
     dockerfilePath: ./Dockerfile
 
-databases:
-  - name: student-db
-    plan: free
+# databases:
+#   - name: student-db
+#     plan: free

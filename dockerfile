@@ -37,6 +37,9 @@ WORKDIR /var/www/html
 # COPY PROJECT FILES
 # =========================
 COPY . .
+# Download Aiven CA cert for SSL
+RUN curl -o /usr/local/share/ca-certificates/aiven-ca.crt https://cacerts.aivencloud.com/ca.pem \
+    && update-ca-certificates
 
 # =========================
 # COMPOSER
@@ -60,7 +63,7 @@ RUN php artisan config:clear || true \
     && php artisan route:clear || true \
     && php artisan view:clear || true
 
-# ⚠️ ONLY CACHE IF APP BOOTS SUCCESSFULLY
+#  ONLY CACHE IF APP BOOTS SUCCESSFULLY
 RUN php artisan config:cache || true
 
 # =========================
