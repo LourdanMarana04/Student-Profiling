@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev
 
 # =========================
-# PHP EXTENSIONS (GD FIX INCLUDED)
+# PHP EXTENSIONS
 # =========================
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
@@ -26,44 +26,52 @@ RUN a2enmod rewrite
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/*.conf \
-    /etc/apache2/apache2.conf \
-    /etc/apache2/conf-available/*.conf
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
 # =========================
-# WORKING DIRECTORY
+# WORK DIR
 # =========================
 WORKDIR /var/www/html
 
 # =========================
-# COPY PROJECT FILES
+# COPY PROJECT
 # =========================
 COPY . .
 
 # =========================
-# COMPOSER INSTALL
+# COMPOSER
 # =========================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # =========================
-# PERMISSIONS FIX
+# LARAVEL FIX (THIS IS CRITICAL)
 # =========================
-RUN chmod -R 775 storage bootstrap/cache
+RUN php artisan config:clear \
+    && php artisan cache:clear \
+    && php artisan route:clear \
+    && php artisan view:clear
+
+RUN php artisan config:cache
 
 # =========================
-# DEBUG (IMPORTANT FOR RENDER TROUBLESHOOTING)
+# PERMISSIONS (RENDER SAFE)
 # =========================
-RUN pwd && ls -la && find . -name artisan
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 777 storage bootstrap/cache
 
 # =========================
-# PORT EXPOSURE
+# DEBUG (REMOVE LATER IF YOU WANT)
+# =========================
+RUN php -v && php artisan --version
+
+# =========================
+# EXPOSE PORT
 # =========================
 EXPOSE 80
 
 # =========================
-# START SERVER
+# START APACHE
 # =========================
 CMD ["apache2-foreground"]
