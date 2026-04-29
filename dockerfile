@@ -75,4 +75,4 @@ EXPOSE 80
 # =========================
 RUN chmod +x start.sh \
     && echo "ServerName localhost" >> /etc/apache2/apache2.conf
-CMD ["apache2-foreground"]
+CMD sh -c "php artisan config:clear && php artisan cache:clear && apache2-foreground"
