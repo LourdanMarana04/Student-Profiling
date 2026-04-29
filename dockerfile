@@ -1,78 +1,51 @@
 FROM php:8.2-apache
 
-# =========================
-# SYSTEM DEPENDENCIES
-# =========================
+# Set working directory
+WORKDIR /var/www/html
+
+# Install system dependencies + Node.js
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip \
-    libzip-dev \
+    git \
+    curl \
+    unzip \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libzip-dev \
     libonig-dev \
-    libxml2-dev
+    libxml2-dev \
+    nodejs \
+    npm \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) pdo pdo_mysql mbstring zip exif pcntl bcmath gd \
+    && a2enmod rewrite
 
-# =========================
-# PHP EXTENSIONS
-# =========================
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    gd pdo pdo_mysql zip mbstring xml
-
-# =========================
-# APACHE CONFIG
-# =========================
-RUN a2enmod rewrite
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-
-# =========================
-# WORKDIR
-# =========================
-WORKDIR /var/www/html
-
-RUN mkdir -p storage/logs storage/framework/views storage/framework/sessions storage/framework/cache/data
-
-# =========================
-# COPY PROJECT FILES
-# =========================
+# Copy project files FIRST (docker layer cache)
 COPY . .
-# Aiven SSL via env MYSQL_ATTR_SSL_CA (no system cert needed)
 
-# =========================
-# COMPOSER
-# =========================
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# =========================
-# PERMISSIONS (RENDER FIX)
-# =========================
-RUN chown -R www-data:www-data storage bootstrap/cache /var/www/html && chmod -R 777 storage bootstrap/cache
+# Install Node dependencies + build Vite assets
+RUN npm ci --only=production
+RUN npm run build
 
-# =========================
-# LARAVEL SAFE CACHE (NO BOOT CRASH)
-# =========================
-RUN php artisan config:clear || true \
-    && php artisan cache:clear || true \
-    && php artisan route:clear || true \
-    && php artisan view:clear || true
+# 🔥 FIX STORAGE PERMISSIONS - LOGS CRASH FIXED
+RUN mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 777 storage bootstrap/cache
 
-#  ONLY CACHE IF APP BOOTS SUCCESSFULLY
-RUN php artisan config:cache || true
+# Set Apache document root to Laravel public
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 
-# =========================
-# EXPOSE PORT
-# =========================
+RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 EXPOSE 80
 
-# =========================
-# START APACHE
-# =========================
-RUN chmod +x start.sh \
-    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 CMD sh -c "php artisan config:clear && php artisan cache:clear && apache2-foreground"
+
