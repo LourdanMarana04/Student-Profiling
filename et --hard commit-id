@@ -1,0 +1,12 @@
+[33m68d7dec5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: commit: Profiling System
+[33m4cf2bfb7[m HEAD@{1}: reset: moving to HEAD~0
+[33m4cf2bfb7[m HEAD@{2}: reset: moving to HEAD~1
+[33m2c967c96[m HEAD@{3}: Branch: renamed refs/heads/main to refs/heads/main
+[33m2c967c96[m HEAD@{5}: commit: Profiling System
+[33m4cf2bfb7[m HEAD@{6}: commit: reset
+[33m00a34c73[m HEAD@{7}: reset: moving to HEAD
+[33m00a34c73[m HEAD@{8}: reset: moving to HEAD~0
+[33m00a34c73[m HEAD@{9}: Branch: renamed refs/heads/main to refs/heads/main
+[33m00a34c73[m HEAD@{11}: Branch: renamed refs/heads/main to refs/heads/main
+[33m00a34c73[m HEAD@{13}: Branch: renamed refs/heads/master to refs/heads/main
+[33m00a34c73[m HEAD@{15}: commit (initial): first commit
