@@ -72,4 +72,6 @@ EXPOSE 80
 # =========================
 # START APACHE
 # =========================
-CMD ["apache2-foreground"]
+RUN chmod +x start.sh
+
+CMD ["bash", "start.sh"]
