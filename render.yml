@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: student-profiling
+    env: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+
+databases:
+  - name: student-db
+    plan: free
