@@ -30,7 +30,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies + build Vite assets
-RUN npm ci --only=production
+RUN npm install
 RUN npm run build
 
 # 🔥 FIX STORAGE PERMISSIONS - LOGS CRASH FIXED
