@@ -37,9 +37,7 @@ WORKDIR /var/www/html
 # COPY PROJECT FILES
 # =========================
 COPY . .
-# Download Aiven CA cert for SSL
-RUN curl -o /usr/local/share/ca-certificates/aiven-ca.crt https://cacerts.aivencloud.com/ca.pem \
-    && update-ca-certificates
+# Aiven SSL via env MYSQL_ATTR_SSL_CA (no system cert needed)
 
 # =========================
 # COMPOSER
