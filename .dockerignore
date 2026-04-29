@@ -2,3 +2,6 @@ vendor
 node_modules
 .env
 .git
+storage/
+!storage/certs/
+!storage/certs/ca.pem
