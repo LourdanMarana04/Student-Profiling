@@ -34,7 +34,7 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available
 WORKDIR /var/www/html
 
 # =========================
-# COPY PROJECT
+# COPY PROJECT FILES
 # =========================
 COPY . .
 
@@ -52,14 +52,22 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
 # =========================
+# LARAVEL SAFE CACHE (NO BOOT CRASH)
+# =========================
+RUN php artisan config:clear || true \
+    && php artisan cache:clear || true \
+    && php artisan route:clear || true \
+    && php artisan view:clear || true
+
+# ⚠️ ONLY CACHE IF APP BOOTS SUCCESSFULLY
+RUN php artisan config:cache || true
+
+# =========================
 # EXPOSE PORT
 # =========================
 EXPOSE 80
 
 # =========================
-# START SCRIPT
+# START APACHE
 # =========================
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD ["/start.sh"]
+CMD ["apache2-foreground"]
