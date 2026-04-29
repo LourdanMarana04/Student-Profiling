@@ -52,7 +52,7 @@ RUN composer install --optimize-autoloader --no-dev --no-interaction
 # =========================
 # PERMISSIONS (RENDER FIX)
 # =========================
-RUN chown -R www-data:www-data storage bootstrap/cache /var/www/html && chmod -R 777 storage bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache /var/www/html && chmod -R 775 storage bootstrap/cache
 
 # =========================
 # LARAVEL SAFE CACHE (NO BOOT CRASH)
@@ -75,4 +75,4 @@ EXPOSE 80
 # =========================
 RUN chmod +x start.sh \
     && echo "ServerName localhost" >> /etc/apache2/apache2.conf
-CMD ["bash", "start.sh"]
+CMD sh -c "php artisan config:clear && php artisan cache:clear && php artisan config:cache && php artisan serve --host=0.0.0.0 --port=10000"
